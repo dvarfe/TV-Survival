@@ -88,6 +88,16 @@ def agg_data(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.pa
     """
     Aggregate data from multiple parquet files with sampling and filtering.
     
+    Data Aggregation Logic:
+    1. Randomly selects n drives from the first dataset (sample_file)
+    2. Tracks the complete behavioral history of these selected drives across all years
+    3. For each selected drive, includes:
+       - All failure events (failure=1)  
+       - Periodic samples (every N days based on frequency parameter)
+    
+    This approach ensures we have longitudinal data for a manageable subset of drives
+    while preserving both failure events and regular monitoring data.
+    
     Args:
         data_folder (str): Path to folder containing parquet files
         unique_ids (int): Number of unique serial numbers to sample
@@ -97,28 +107,32 @@ def agg_data(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.pa
     Returns:
         pd.DataFrame: Aggregated dataset with filtered records    
     """
+    # Step 1: Select random sample of drives from the first dataset
     df = pd.read_parquet(sample_file)
     serial_numbers = np.random.choice(df['serial_number'].unique(), unique_ids)
+    
+    # Step 2: Track behavioral history of selected drives across all datasets
     df_list = []
     for file in os.listdir(data_folder):
         if file.endswith('.parquet'):
             print(f'Processing {file}')
             df = pd.read_parquet(file)
+            # Filter to only selected drives
             df = df[df['serial_number'].isin(serial_numbers)]
+            # Keep failure events + periodic samples for monitoring
             df = df[(df['failure'] == 1) | (df['date'].dt.day % frequency == 0)]
             df_list.append(df)
     df = pd.concat(df_list)
     return df
 
-
-if __name__ == "__main__":
+def main(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.parquet'):
     # Step 1: Convert zip archives to parquet format
     print("Converting zip archives to parquet format...")
     convert_to_parquet('.')
     
     # Step 2: Aggregate data from parquet files
     print("Aggregating data from parquet files...")
-    df = agg_data()
+    df = agg_data(data_folder, unique_ids, frequency, sample_file)
     
     # Step 3: Print statistics
     print(f"Number of unique serial numbers: {df['serial_number'].unique().shape[0]}")
@@ -130,3 +144,6 @@ if __name__ == "__main__":
     # Save merged data to parquet
     df.to_parquet('merged.parquet')
     print("Merged data saved to merged.parquet")
+
+if __name__ == "__main__":
+    main()
