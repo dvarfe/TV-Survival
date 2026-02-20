@@ -5,3 +5,7 @@ pandas
 jupyter
 lifelines
 sksurv
+auton-survival
+torch
+tqdm
+pyarrow
