@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def main(input_file='2016_2017_trunc.parquet', 
-         data_folder='HOD_KONEM',
+         data_folder='Preprocessed',
          random_state=42,
          test_size=0.2,
          id_col='serial_number',
