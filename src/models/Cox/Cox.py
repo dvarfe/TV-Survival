@@ -7,7 +7,10 @@ from tqdm import tqdm
 
 
 class CoxTimeVaryingEstimator(CoxTimeVaryingFitter):
-
+    """
+    Cox proportional hazards model for time-varying covariates.
+    Extends lifelines CoxTimeVaryingFitter to work with PyTorch DataLoaders.
+    """
 
     def __init__(self, penalizer=0.0, l1_ratio=0.0, event_col="failure", time_col='time', id_col='serial_number', device=None):
         super().__init__(penalizer=penalizer, l1_ratio=l1_ratio)
@@ -118,6 +121,13 @@ class CoxTimeVaryingEstimator(CoxTimeVaryingFitter):
 
 
 class CoxTimeInvariantSNFitter(CoxPHFitter):
+    """
+    Cox Time-Invariant Short-term Observations (CoxTISN) model.
+    
+    Uses CoxPH and trains it on observations as if they are independent.
+    The outcome time for an observation is the start of the next observation.
+    If no event occurs, such short-term observation is considered censored.
+    """
 
     def __init__(self, penalizer=0.0, l1_ratio=0.0, event_col="failure", time_col='time', id_col='serial_number', device=None):
         super().__init__(penalizer=penalizer, l1_ratio=l1_ratio)
@@ -220,6 +230,12 @@ class CoxTimeInvariantSNFitter(CoxPHFitter):
 
 
 class CoxTimeInvariantLNFitter(CoxPHFitter):
+    """
+    Cox Time-Invariant Long-term Observations (CoxTILN) model.
+    
+    Uses CoxPH and trains it on observations as if they are independent.
+    The outcome time for each observation is the actual outcome time.
+    """
 
     def __init__(self, penalizer=0.0, l1_ratio=0.0, event_col="failure", time_col='time', id_col='serial_number', device=None):
         super().__init__(penalizer=penalizer, l1_ratio=l1_ratio)
