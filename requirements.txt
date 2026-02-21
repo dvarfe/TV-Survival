@@ -4,7 +4,7 @@ scikit-learn
 pandas
 jupyter
 lifelines
-sksurv
+scikit-survival
 auton-survival
 torch
 tqdm
