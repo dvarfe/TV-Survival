@@ -30,7 +30,7 @@ import numpy as np
 from shutil import rmtree
 
 
-def folder_to_parquet(folder_path):
+def folder_to_parquet(folder_path, save_to):
     """
     Convert all CSV files in a folder to a single Parquet file.
     
@@ -48,7 +48,8 @@ def folder_to_parquet(folder_path):
                 df[col] = df[col].astype('Int64')
             df_list.append(df)
     df_concat = pd.concat(df_list)
-    df_concat.to_parquet(f'{os.path.basename(folder_path)}.parquet')
+    os.makedirs(save_to, exist_ok=True)
+    df_concat.to_parquet(os.path.join(save_to, f'{os.path.basename(folder_path)}.parquet'))
 
 
 def unzip_folder(zip_file, extraction_folder_path):
@@ -60,13 +61,19 @@ def unzip_folder(zip_file, extraction_folder_path):
         extraction_folder_path (str): Path where to extract files
     """
     if zip_file.endswith('.zip'):
+        year = os.path.basename(zip_file).split('.')[0][::-1].split('_', 1)[0][::-1]
+        extract_to = extraction_folder_path
+        if int(year) > 2015:
+            extract_to = os.path.join(extraction_folder_path, os.path.basename(zip_file).split('.')[0])
         print(f'Unzipping {zip_file}')
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-            zip_ref.extractall(extraction_folder_path)
-        os.remove(zip_file)
+            zip_ref.extractall(extract_to)
+        # os.remove(zip_file)
+        return extract_to
+    return None
 
 
-def convert_to_parquet(folder_path):
+def convert_to_parquet(folder_path, extract_path, save_parquet):
     """
     Process all zip files in a folder: unzip, convert to parquet, and cleanup.
     
@@ -75,11 +82,12 @@ def convert_to_parquet(folder_path):
     """
     for zipfile in os.listdir(folder_path):
         if zipfile.endswith('.zip'):
-            unzipped_path = zipfile.split('.')[0]
-            unzip_folder(zipfile, unzipped_path)
+            zip_path = os.path.join(folder_path, zipfile)
+            # unzipped_path = os.path.join(extract_path, zipfile.split('.')[0])
+            unzipped_path = unzip_folder(zip_path, extract_path)
             rmtree(os.path.join(unzipped_path, '__MACOSX'))
             print(f'Converting to parquet {unzipped_path}')
-            folder_to_parquet(unzipped_path)
+            folder_to_parquet(unzipped_path, save_parquet)
             print(f'Removing {unzipped_path}')
             rmtree(unzipped_path)
 
@@ -108,7 +116,7 @@ def agg_data(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.pa
         pd.DataFrame: Aggregated dataset with filtered records    
     """
     # Step 1: Select random sample of drives from the first dataset
-    df = pd.read_parquet(sample_file)
+    df = pd.read_parquet(os.path.join(data_folder, sample_file))
     serial_numbers = np.random.choice(df['serial_number'].unique(), unique_ids)
     
     # Step 2: Track behavioral history of selected drives across all datasets
@@ -116,7 +124,7 @@ def agg_data(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.pa
     for file in os.listdir(data_folder):
         if file.endswith('.parquet'):
             print(f'Processing {file}')
-            df = pd.read_parquet(file)
+            df = pd.read_parquet(os.path.join(data_folder, file))
             # Filter to only selected drives
             df = df[df['serial_number'].isin(serial_numbers)]
             # Keep failure events + periodic samples for monitoring
@@ -125,14 +133,14 @@ def agg_data(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.pa
     df = pd.concat(df_list)
     return df
 
-def main(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.parquet'):
+def main(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.parquet', extract_folder='tmp', parquet_folder='Parquet'):
     # Step 1: Convert zip archives to parquet format
     print("Converting zip archives to parquet format...")
-    convert_to_parquet('.')
+    convert_to_parquet(data_folder, extract_folder, parquet_folder)
     
     # Step 2: Aggregate data from parquet files
     print("Aggregating data from parquet files...")
-    df = agg_data(data_folder, unique_ids, frequency, sample_file)
+    df = agg_data(parquet_folder, unique_ids, frequency, sample_file)
     
     # Step 3: Print statistics
     print(f"Number of unique serial numbers: {df['serial_number'].unique().shape[0]}")
@@ -142,7 +150,7 @@ def main(data_folder='.', unique_ids=5000, frequency=1, sample_file='2016.parque
     print(f"Number of last records: {len(last)}")
     
     # Save merged data to parquet
-    df.to_parquet('merged.parquet')
+    df.to_parquet(os.path.join(data_folder, 'merged.parquet'))
     print("Merged data saved to merged.parquet")
 
 if __name__ == "__main__":

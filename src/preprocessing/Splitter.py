@@ -1,7 +1,9 @@
-from modules.constants import TRAIN_GRID, TEST_GRID
-from modules.preprocessing import stratified_split, Sampler, TimeTransformer, ObservationAggregator, FeatureFilter, NanImputer, TimeMaskedScaler
 from sklearn.pipeline import Pipeline
 import pandas as pd
+import os
+
+from .modules.constants import TRAIN_GRID, TEST_GRID
+from .modules.preprocessing import stratified_split, Sampler, TimeTransformer, ObservationAggregator, FeatureFilter, NanImputer, TimeMaskedScaler
 
 # Program that preprocesses truncated data and saves train/test sets to parquet files
 # Format: {DATA_FOLDER}/{n_samples}_{train/test}_preprocessed.parquet
@@ -30,6 +32,8 @@ def main(input_file='2016_2017_trunc.parquet',
     """
 
     df = pd.read_parquet(input_file)
+    os.makedirs(data_folder, exist_ok=True)
+
     print('Data loaded')
 
     # Remove drives with single observation - they are not useful
