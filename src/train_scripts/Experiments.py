@@ -16,11 +16,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 from scoring import ModelScorer
 from utils.Dataset import DiskDataset
-from models.SP import SurvPredictor
-from disk_analyzer.models.Cox import (
-    CoxTimeVaryingEstimator,
-)
-from disk_analyzer.models.Net import MAX_CLIP
+from models import SurvPredictor
+from models import CoxTimeVaryingEstimator
 
 
 # Configs

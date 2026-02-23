@@ -12,7 +12,7 @@ from tqdm import tqdm
 from sksurv.metrics import check_y_survival
 
 from .Net import ClassifierArchitecture
-from ...scoring.ModelScorer import ModelScorer
+from scoring.ModelScorer import ModelScorer
 
 # Default constants
 TIMES = np.arange(0, 730)

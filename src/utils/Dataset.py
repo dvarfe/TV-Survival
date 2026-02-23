@@ -7,8 +7,6 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
-from ..utils.constants import TIMES
-
 torch.manual_seed(42)
 np.random.seed(42)
 
@@ -18,7 +16,7 @@ class DiskDataset(IterableDataset):
                  mode: str,
                  file_paths: List[str],
                  shuffle_files: bool = True,
-                 times: np.ndarray = TIMES,
+                 times: np.ndarray = np.arange(0, 729),
                  to_cens_time_list: List[int] = [],
                  to_term_time_list: List[int] = [],
                  cens_prob: float = -1,

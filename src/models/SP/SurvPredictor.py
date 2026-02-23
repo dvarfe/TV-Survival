@@ -11,7 +11,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from .Net import ClassifierArchitecture
-from ...scoring import ModelScorer
+from scoring import ModelScorer
 
 torch.manual_seed(42)
 if torch.cuda.is_available():
