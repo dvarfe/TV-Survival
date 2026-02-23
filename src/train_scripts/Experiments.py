@@ -82,6 +82,8 @@ def create_res_file(filename: str, schema: Dict[str, list]):
 
 
 def save_model(model, model_id: str, folder: str):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     with open(os.path.join(folder, f"{model_id}.pkl"), "wb") as f:
         pickle.dump(model, f)
 
@@ -92,14 +94,15 @@ def prepare_dataloader(
     data_type: str,
     dataset_type: str,
     test_samples: Optional[int] = None,
+    data_ext: str = ".csv" # or ".parquet"
 ):
     if data_type == "train":
-        files = [f"{data_cfg.data_folder}/{train_samples}_train_preprocessed.csv"]
+        files = [f"{data_cfg.data_folder}/{train_samples}_train_preprocessed{data_ext}"]
         batch_size = data_cfg.train_batchsize
     else:
         if test_samples is None:
             raise ValueError("test_samples must be provided for test loader")
-        files = [f"{data_cfg.data_folder}/{train_samples}_{test_samples}_test_preprocessed.csv"]
+        files = [f"{data_cfg.data_folder}/{train_samples}_{test_samples}_test_preprocessed{data_ext}"]
         batch_size = data_cfg.score_batchsize
 
     ds = DiskDataset(

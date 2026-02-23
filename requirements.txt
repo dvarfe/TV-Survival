@@ -9,3 +9,4 @@ auton-survival
 torch
 tqdm
 pyarrow
+torchtyping
