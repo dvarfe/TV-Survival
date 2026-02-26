@@ -94,7 +94,7 @@ def prepare_dataloader(
     data_type: str,
     dataset_type: str,
     test_samples: Optional[int] = None,
-    data_ext: str = ".csv" # or ".parquet"
+    data_ext: str = ".csv"  # or ".parquet"
 ):
     if data_type == "train":
         files = [f"{data_cfg.data_folder}/{train_samples}_train_preprocessed{data_ext}"]

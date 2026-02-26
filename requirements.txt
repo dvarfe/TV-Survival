@@ -1,9 +1,12 @@
 survivors
 numpy
 scikit-learn
-pandas
+osqp==1.0.4
+pandas==1.5.3
 jupyter
-lifelines
+lifelines==0.26.4
+survivors==1.4.5
+formulaic==0.2.4
 scikit-survival
 auton-survival
 torch
